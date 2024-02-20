@@ -3,6 +3,7 @@ package icu.buzz.rpc;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
+import icu.buzz.pojo.User;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageCodec;
@@ -14,10 +15,14 @@ public class RpcCodec extends ByteToMessageCodec<RpcRequest> {
 
     public RpcCodec() {
         this.kryo = new Kryo();
+        kryo.register(RpcRequest.class);
+        kryo.register(RpcResponse.class);
+        kryo.register(Object[].class);
+        kryo.register(User.class);
     }
 
     @Override
-    protected void encode(ChannelHandlerContext ctx, RpcRequest msg, ByteBuf out) throws Exception {
+    protected void encode(ChannelHandlerContext ctx, RpcRequest msg, ByteBuf out) {
         // try with resources will close the output automatically
         // create a kryo output buffer with size 1024, maximum size of the buffer is -1 (on limit)
         try (Output output = new Output(1024, -1)) {
@@ -33,7 +38,7 @@ public class RpcCodec extends ByteToMessageCodec<RpcRequest> {
     }
 
     @Override
-    protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
+    protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) {
         if (in.readableBytes() < 4) {
             return;
         }

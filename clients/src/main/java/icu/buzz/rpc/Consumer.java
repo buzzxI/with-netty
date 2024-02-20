@@ -1,5 +1,7 @@
 package icu.buzz.rpc;
 
+import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.io.Output;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -55,6 +57,7 @@ public class Consumer {
         CompletableFuture<RpcResponse> future = new CompletableFuture<>();
         channel.pipeline().get(ConsumerHandler.class).setFuture(future);
         channel.writeAndFlush(request);
+//        channel.writeAndFlush(new Object());
         try {
             return future.get();
         } catch (InterruptedException | ExecutionException e) {

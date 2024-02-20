@@ -5,6 +5,10 @@ public class RpcRequest {
     private String methodName;
     private Object[] params;
 
+    // reserved for kryo
+    public RpcRequest() {
+    }
+
     public RpcRequest(String serviceName, String methodName, Object[] params) {
         this.serviceName = serviceName;
         this.methodName = methodName;

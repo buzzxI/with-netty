@@ -22,7 +22,8 @@ public class RpcHandler implements InvocationHandler {
             }
             if (consumer == null) return null;
         }
-        RpcRequest request = new RpcRequest(proxy.getClass().getName(), method.getName(), args);
+
+        RpcRequest request = new RpcRequest(method.getDeclaringClass().getName(), method.getName(), args);
         RpcResponse response = consumer.invoke(request);
         if (response == null) return null;
         return response.getRst();

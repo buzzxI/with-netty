@@ -3,6 +3,7 @@ package icu.buzz.rpc;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
+import icu.buzz.pojo.User;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageCodec;
@@ -14,6 +15,10 @@ public class RpcCodec extends ByteToMessageCodec<RpcResponse> {
 
     public RpcCodec() {
         this.kryo = new Kryo();
+        kryo.register(RpcRequest.class);
+        kryo.register(RpcResponse.class);
+        kryo.register(Object[].class);
+        kryo.register(User.class);
     }
 
     @Override

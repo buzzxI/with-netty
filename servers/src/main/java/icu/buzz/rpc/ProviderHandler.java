@@ -1,42 +1,40 @@
 package icu.buzz.rpc;
 
-import icu.buzz.ServiceImpl;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Map;
 
 public class ProviderHandler extends SimpleChannelInboundHandler<RpcRequest> {
 
-    private static final Map<String, Class<?>> SERVICES;
-
-    static {
-        SERVICES = new HashMap<>();
-        SERVICES.put("Service", ServiceImpl.class);
-    }
-
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, RpcRequest msg) throws Exception {
+    protected void channelRead0(ChannelHandlerContext ctx, RpcRequest msg) {
         RpcResponse response = new RpcResponse(null);
+        try {
+            // get class
+            Class<?> klass = Class.forName(msg.getServiceName() + "Impl");
+            // get method
+            Object[] params = msg.getParams();
+            Class<?>[] paramTypes = new Class[params.length];
+            for (int i = 0; i < params.length; i++) paramTypes[i] = params[i].getClass();
+            Method method = klass.getMethod(msg.getMethodName(), paramTypes);
+            // new an instance
+            Object instance = klass.getDeclaredConstructor().newInstance();
 
-        Class<?> klass = SERVICES.get(msg.getServiceName());
-        if (klass == null) {
+            Object result = method.invoke(instance, params);
+
+            response.setRst(result);
+            response.setMsg("all good");
+        } catch (ClassNotFoundException e) {
+            response.setMsg("service has not been provided");
+        } catch (NoSuchMethodException | SecurityException e) {
+            response.setMsg("function has not been provided");
+        } catch (InvocationTargetException | InstantiationException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        } finally {
             ctx.writeAndFlush(response);
-            return;
         }
-
-        Object[] params = msg.getParams();
-        Class<?>[] paramTypes = new Class[params.length];
-        for (int i = 0; i < params.length; i++) paramTypes[i] = params[i].getClass();
-        Method method = klass.getMethod(msg.getMethodName(), paramTypes);
-
-        Object instance = klass.getDeclaredConstructor().newInstance();
-        Object result = method.invoke(instance, params);
-
-        response.setRst(result);
-        ctx.writeAndFlush(response);
     }
 
     @Override
