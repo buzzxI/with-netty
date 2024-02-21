@@ -57,7 +57,6 @@ public class Consumer {
         CompletableFuture<RpcResponse> future = new CompletableFuture<>();
         channel.pipeline().get(ConsumerHandler.class).setFuture(future);
         channel.writeAndFlush(request);
-//        channel.writeAndFlush(new Object());
         try {
             return future.get();
         } catch (InterruptedException | ExecutionException e) {
